@@ -11,6 +11,9 @@ import (
 	"github.com/containerd/containerd/oci"
 )
 
+func FromCkpt() (ctr containerd.Container, err error) {
+}
+
 func New() (ctr containerd.Container, err error) {
 	log.Println("Welcome!")
 	log.Println("Launching a quake3 server in a container!")
