@@ -42,12 +42,11 @@ func main() {
 	}
 	defer container.Delete(ctx, containerd.WithSnapshotCleanup)
 
-	task, err := container.NewTask(ctx, cio.NewCreator(cio.WithStdio))
+	task, err := container.NewTask(ctx, cio.NullIO)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	defer task.Delete(ctx)
 
 	// make sure we wait before calling start
 	exitStatusC, err := task.Wait(ctx)
@@ -64,6 +63,13 @@ func main() {
 	// sleep for a lil bit to see the logs
 	time.Sleep(3 * time.Second)
 
+	ckpt, err := task.Checkpoint(ctx, containerd.WithCheckpointName("quake3s-init"))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer client.ImageService().Delete(ctx, "quake3s-init")
+
 	// kill the process and get the exit status
 	if err := task.Kill(ctx, syscall.SIGTERM); err != nil {
 		log.Println(err)
@@ -76,5 +82,37 @@ func main() {
 		log.Println(err)
 		return
 	}
+
+	task.Delete(ctx)
+
 	fmt.Printf("quake3 server exited with status: %d\n", code)
+
+	task, err = container.NewTask(ctx, cio.NewCreator(cio.WithStdio),
+		containerd.WithTaskCheckpoint(ckpt))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer task.Delete(ctx)
+
+	// make sure we wait before calling start
+	exitStatusC, err = task.Wait(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// call start on the task to execute the redis server
+	if err := task.Start(ctx); err != nil {
+		log.Println(err)
+		return
+	}
+
+	status = <-exitStatusC
+	code, _, err = status.Result()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	fmt.Println("Checkpoint exited with", code)
 }
