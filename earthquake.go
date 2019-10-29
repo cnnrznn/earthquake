@@ -1,10 +1,22 @@
 package main
 
 import (
-    "github.com/cnnrznn/earthquake/server"
+	"time"
+
+	"github.com/cnnrznn/earthquake/server"
 )
 
 func main() {
-    server.New()
-    return
+	s, err := server.New()
+	if err != nil {
+		panic(err)
+	}
+
+	for i := 0; i < 10; i++ {
+		// wait a little bit
+		time.Sleep(3 * time.Second)
+		s.Checkpoint()
+	}
+
+	return
 }
