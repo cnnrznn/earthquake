@@ -9,6 +9,7 @@ import (
 	"github.com/containerd/containerd/cio"
 	"github.com/containerd/containerd/namespaces"
 	"github.com/containerd/containerd/oci"
+	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 type Server struct {
@@ -133,7 +134,8 @@ func New() (s Server, err error) {
 	// Create the container
 	ctr, err := client.NewContainer(ctx, "quake3s",
 		containerd.WithNewSnapshot("quake3s-snapshot", image),
-		containerd.WithNewSpec(oci.WithImageConfig(image)))
+		containerd.WithNewSpec(oci.WithImageConfig(image),
+			oci.WithHostNamespace(specs.NetworkNamespace)))
 	if err != nil {
 		return
 	}
