@@ -12,10 +12,11 @@ func main() {
 		panic(err)
 	}
 
-	for i := 0; i < 10; i++ {
-		// wait a little bit
-		time.Sleep(3 * time.Second)
-		s.Checkpoint()
+	// wait a little bit
+	time.Sleep(3 * time.Second)
+	err = s.CheckpointRestore()
+	if err != nil {
+		panic(err)
 	}
 
 	return
