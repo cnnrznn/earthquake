@@ -13,8 +13,9 @@ func main() {
 	}
 
 	// wait a little bit
-	time.Sleep(3 * time.Second)
+	time.Sleep(10 * time.Second)
 	err = s.CheckpointRestore()
+	//err = s.Checkpoint()
 	if err != nil {
 		panic(err)
 	}
